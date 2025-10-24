@@ -68,7 +68,7 @@ const Expense = mongoose.model('Expense', expenseSchema);
 // Public Routes & AUTH ROUTES (FIXED MOUNT POINT)
 
 app.get('/', (req, res) => {
-    res.send('Expense Tracker API is running.');
+    res.send('Expense Tracker API is running - V2 ROUTING FIX IS LIVE.');
 });
 
 
