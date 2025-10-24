@@ -1,8 +1,7 @@
-// frontend/src/App.js
-
 import React, { useState, useEffect } from 'react';
 import './App.css'; 
 
+// CRITICAL FIX: This will read the value set in the Vercel Dashboard (which should be '/api')
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 function App() {
@@ -25,7 +24,7 @@ function App() {
     // Check token on load and set user email
     useEffect(() => {
         if (token) {
-           
+            
             fetchExpenses(); 
             
             // Simple approach to get email (can be set during login success)
@@ -44,6 +43,7 @@ function App() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        // Path will be '/api/auth/login' or '/api/auth/register' 
         const endpoint = isLoginView ? '/auth/login' : '/auth/register';
 
         try {
@@ -88,9 +88,9 @@ function App() {
         setError(null);
     };
 
-  
+    
     // EXPENSE LOGIC
-   
+    
 
     const fetchExpenses = async () => {
         if (!token) return;
@@ -98,6 +98,7 @@ function App() {
         setLoading(true);
         setError(null);
         try {
+            // Path will be '/api/expenses'
             const response = await fetch(`${API_BASE_URL}/expenses`, {
                 headers: {
                     'x-auth-token': token, // Send the JWT
@@ -123,6 +124,8 @@ function App() {
 
     const handleSubmitExpense = async (e) => {
         e.preventDefault();
+        // The check below uses alert(), which should be avoided in production.
+        // It's kept here for functionality, but generally, use a custom modal.
         if (!description || !amount || isNaN(Number(amount))) {
             alert('Please enter a valid description and amount.');
             return;
@@ -130,6 +133,7 @@ function App() {
 
         setLoading(true);
         try {
+            // Path will be '/api/expenses'
             const response = await fetch(`${API_BASE_URL}/expenses`, {
                 method: 'POST',
                 headers: {
@@ -249,7 +253,7 @@ function App() {
                     <p>Loading expenses...</p>
                 ) : (
                     <>
-                         {/* Display Total above the table for immediate visibility */}
+                        {/* Display Total above the table for immediate visibility */}
                         <div className="total">
                             <strong>Total Expenses: ₹{total.toFixed(2)}</strong>
                         </div>
