@@ -3,14 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import './App.css'; 
 
-// !!! CRITICAL: REPLACE THIS WITH YOUR DEPLOYED BACKEND URL (e.g., https://your-expense-api.vercel.app/api) !!!
-const API_BASE_URL = 'http://localhost:5000/api'; 
+const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 function App() {
     // State for Auth
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [userEmail, setUserEmail] = useState(null);
-    const [isLoginView, setIsLoginView] = useState(true); // Toggle between Login/Register
+    const [isLoginView, setIsLoginView] = useState(true); 
 
     // State for Expenses
     const [expenses, setExpenses] = useState([]);
@@ -26,8 +25,7 @@ function App() {
     // Check token on load and set user email
     useEffect(() => {
         if (token) {
-            // A real app would decode the token, but for simplicity, we use local storage or fetch.
-            // Attempt to fetch data to validate token existence/session.
+           
             fetchExpenses(); 
             
             // Simple approach to get email (can be set during login success)
@@ -65,15 +63,14 @@ function App() {
 
             // Success: Save token and user email
             localStorage.setItem('token', data.token);
-            localStorage.setItem('userEmail', data.user.email || authEmail); // Save email on successful auth
+            localStorage.setItem('userEmail', data.user.email || authEmail); 
             setToken(data.token);
             setUserEmail(data.user.email || authEmail);
 
             // Clear form
             setAuthEmail('');
             setAuthPassword('');
-            fetchExpenses(); // Fetch data immediately after login
-
+            fetchExpenses(); 
         } catch (err) {
             setError(err.message);
             console.error(err);
@@ -87,13 +84,13 @@ function App() {
         setUserEmail(null);
         setExpenses([]);
         localStorage.removeItem('token');
-        localStorage.removeItem('userEmail'); // Clear saved email
+        localStorage.removeItem('userEmail'); 
         setError(null);
     };
 
-    // ----------------------------------------------------
+  
     // EXPENSE LOGIC
-    // ----------------------------------------------------
+   
 
     const fetchExpenses = async () => {
         if (!token) return;
@@ -161,9 +158,9 @@ function App() {
 
     const total = expenses.reduce((acc, expense) => acc + expense.amount, 0);
 
-    // ----------------------------------------------------
+    
     // RENDER LOGIC
-    // ----------------------------------------------------
+
 
     if (!token) {
         // Show Auth Forms
