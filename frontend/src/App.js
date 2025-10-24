@@ -1,9 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import './App.css'; 
-
-// !!! CRITICAL: Set the LIVE VERCEL DOMAIN for the API calls !!!
-// The /api path is handled by the vercel.json rewrite rule in the root.
-const API_BASE_URL = 'https://my-mern-api.onrender.com/api'; 
+const API_BASE_URL = 'https://my-mern-api.onrender.com'; // CRITICAL: This is your live Render domain, NOT including /api
 
 function App() {
     // State for Auth
@@ -41,14 +36,13 @@ function App() {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        const endpoint = isLoginView ? '/auth/login' : '/auth/auth/register'; // Check for correct route endpoint on Vercel
         
-        // Use the absolute URL for debugging Vercel routing
-        const url = `${API_BASE_URL}${endpoint}`;
-
+        // Use the endpoint path directly
+        const endpoint = isLoginView ? '/auth/login' : '/auth/register'; 
 
         try {
-            const response = await fetch(url, {
+            // CRITICAL FIX: Explicitly prepend /api/ to the fetch call
+            const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -59,9 +53,7 @@ function App() {
             const data = await response.json();
 
             if (!response.ok) {
-                 // Check for 405 error explicitly in logs
-                 console.error("API Response Status:", response.status); 
-                throw new Error(data.message || (isLoginView ? 'Login failed. Check backend configuration.' : 'Registration failed.'));
+                throw new Error(data.message || (isLoginView ? 'Login failed.' : 'Registration failed.'));
             }
 
             // Success: Save token and user email
@@ -101,7 +93,8 @@ function App() {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`${API_BASE_URL}/expenses`, {
+            // CRITICAL FIX: Explicitly use /api/expenses
+            const response = await fetch(`${API_BASE_URL}/api/expenses`, {
                 headers: {
                     'x-auth-token': token, 
                 },
@@ -125,16 +118,16 @@ function App() {
 
     const handleSubmitExpense = async (e) => {
         e.preventDefault();
-        // Since alert() is restricted, console logging the error
+        // NOTE: Standard practice is to use a modal/message box instead of alert()
         if (!description || !amount || isNaN(Number(amount))) {
-             console.error('Validation Error: Please enter a valid description and amount.');
-             setError('Please enter a valid description and amount.');
-             return;
+            console.error('Validation Error: Please enter a valid description and amount.');
+            return;
         }
 
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/expenses`, {
+            // CRITICAL FIX: Explicitly use /api/expenses
+            const response = await fetch(`${API_BASE_URL}/api/expenses`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

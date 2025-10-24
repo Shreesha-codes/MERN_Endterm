@@ -13,8 +13,8 @@ const PORT = process.env.PORT || 5000;
 
 // --- Middleware (Universal CORS FIX) ---
 
-// This configuration explicitly lists known safe domains (Render, Vercel, localhost)
-// and uses a universal wildcard check to ensure flexibility during deployment.
+// This final configuration explicitly allows your Render domain and uses 
+// a universal wildcard check for flexible deployment.
 const ALLOWED_ORIGINS = [
     'https://mern-endterm.vercel.app', 
     'https://mern-endterm-czx9.vercel.app', 
@@ -27,7 +27,7 @@ app.use(cors({
         // Allow requests with no origin (like Postman or server-to-server calls)
         if (!origin) return callback(null, true);
         
-        // Check if the origin is in our allowed list OR if it's a Vercel/Render preview/deployment URL
+        // Check if the origin is in our allowed list OR if it ends with a deployment domain
         if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app') || origin.endsWith('.onrender.com')) {
             return callback(null, true);
         } else {
@@ -75,6 +75,7 @@ app.get('/', (req, res) => {
 });
 
 // Authentication Routes (uses the separate router file)
+// Note: This mounts authRoutes to the /auth path
 app.use('/auth', authRoutes);
 
 
