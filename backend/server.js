@@ -2,17 +2,17 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const auth = require('./middleware/auth'); // Import auth middleware
-const authRoutes = require('./routes/authRoutes'); // Import auth routes
-const User = require('./models/User'); // Assuming this file exists and exports the User model
+const auth = require('./middleware/auth'); 
+const authRoutes = require('./routes/authRoutes'); 
+const User = require('./models/User');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware (CORRECTED CORS)
-// ----------------------------------------------------
+// Middleware 
+
 const ALLOWED_ORIGINS = [
     'https://mern-endterm.vercel.app',       
     'https://mern-endterm-czx9.vercel.app', 
@@ -23,7 +23,7 @@ app.use(cors({
     origin: function(origin, callback) {
         if (!origin) return callback(null, true);
         
-        // This allows specific origins AND any Vercel preview domain (*.vercel.app)
+       
         if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
             return callback(null, true);
         } else {
@@ -35,12 +35,12 @@ app.use(cors({
 }));
 
 app.use(express.json()); 
-// ----------------------------------------------------
 
 
-// ----------------------------------------------------
+
+
 // MongoDB Connection
-// ----------------------------------------------------
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected successfully.'))
   .catch(err => {
@@ -48,9 +48,9 @@ mongoose.connect(process.env.MONGO_URI)
     process.exit(1);
   });
 
-// ----------------------------------------------------
+
 // Mongoose Schema and Model 
-// ----------------------------------------------------
+
 const expenseSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -64,23 +64,19 @@ const expenseSchema = new mongoose.Schema({
 
 const Expense = mongoose.model('Expense', expenseSchema);
 
-// ----------------------------------------------------
+
 // Public Routes & AUTH ROUTES (FIXED MOUNT POINT)
-// ----------------------------------------------------
+
 app.get('/', (req, res) => {
     res.send('Expense Tracker API is running.');
 });
 
-// FIX: Authentication routes mounted at '/auth'. 
-// Vercel.json proxies /api to this, resulting in final path /api/auth
+
 app.use('/auth', authRoutes);
 
 
-// ----------------------------------------------------
-// Protected Expense Routes (FIXED MOUNT POINT)
-// ----------------------------------------------------
 
-// FIX: Expense GET route mounted at '/expenses'. Deployed path: /api/expenses
+
 app.get('/expenses', auth, async (req, res) => {
   try {
     const expenses = await Expense.find({ user: req.user.id }).sort({ date: -1 }); 
@@ -90,7 +86,7 @@ app.get('/expenses', auth, async (req, res) => {
   }
 });
 
-// FIX: Expense POST route mounted at '/expenses'. Deployed path: /api/expenses
+
 app.post('/expenses', auth, async (req, res) => {
   const { description, amount } = req.body;
   if (!description || !amount) {
@@ -114,3 +110,6 @@ app.post('/expenses', auth, async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+
+// updated the server.js file lastly
