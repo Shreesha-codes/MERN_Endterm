@@ -6,7 +6,8 @@ This project is a fully authenticated, full-stack expense tracking application b
 
 Frontend Application (REQUIRED SUBMISSION LINK)
 
-[PASTE YOUR FINAL LIVE APP URL HERE]
+https://mern-endterm2.onrender.com/
+
 
 Backend API Endpoint : https://mern-endterm1.onrender.com/
 
