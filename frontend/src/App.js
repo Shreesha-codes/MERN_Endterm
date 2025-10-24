@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './App.css'; 
 
-// CRITICAL FIX: This will read the value set in the Vercel Dashboard (which should be '/api')
-const API_BASE_URL = process.env.REACT_APP_API_URL;
+// !!! CRITICAL: Set the LIVE VERCEL DOMAIN for the API calls !!!
+// The /api path is handled by the vercel.json rewrite rule in the root.
+const API_BASE_URL = 'https://my-mern-api.onrender.com/api'; 
 
 function App() {
     // State for Auth
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [userEmail, setUserEmail] = useState(null);
-    const [isLoginView, setIsLoginView] = useState(true); 
+    const [isLoginView, setIsLoginView] = useState(true); // Toggle between Login/Register
 
     // State for Expenses
     const [expenses, setExpenses] = useState([]);
@@ -24,10 +25,7 @@ function App() {
     // Check token on load and set user email
     useEffect(() => {
         if (token) {
-            
             fetchExpenses(); 
-            
-            // Simple approach to get email (can be set during login success)
             const savedEmail = localStorage.getItem('userEmail');
             if (savedEmail) {
                 setUserEmail(savedEmail);
@@ -35,19 +33,22 @@ function App() {
         }
     }, [token]);
 
-    
+    // ----------------------------------------------------
     // AUTHENTICATION LOGIC
-
+    // ----------------------------------------------------
 
     const handleAuth = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        // Path will be '/api/auth/login' or '/api/auth/register' 
-        const endpoint = isLoginView ? '/auth/login' : '/auth/register';
+        const endpoint = isLoginView ? '/auth/login' : '/auth/auth/register'; // Check for correct route endpoint on Vercel
+        
+        // Use the absolute URL for debugging Vercel routing
+        const url = `${API_BASE_URL}${endpoint}`;
+
 
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -58,7 +59,9 @@ function App() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || (isLoginView ? 'Login failed.' : 'Registration failed.'));
+                 // Check for 405 error explicitly in logs
+                 console.error("API Response Status:", response.status); 
+                throw new Error(data.message || (isLoginView ? 'Login failed. Check backend configuration.' : 'Registration failed.'));
             }
 
             // Success: Save token and user email
@@ -67,10 +70,10 @@ function App() {
             setToken(data.token);
             setUserEmail(data.user.email || authEmail);
 
-            // Clear form
             setAuthEmail('');
             setAuthPassword('');
             fetchExpenses(); 
+
         } catch (err) {
             setError(err.message);
             console.error(err);
@@ -88,9 +91,9 @@ function App() {
         setError(null);
     };
 
-    
+    // ----------------------------------------------------
     // EXPENSE LOGIC
-    
+    // ----------------------------------------------------
 
     const fetchExpenses = async () => {
         if (!token) return;
@@ -98,14 +101,12 @@ function App() {
         setLoading(true);
         setError(null);
         try {
-            // Path will be '/api/expenses'
             const response = await fetch(`${API_BASE_URL}/expenses`, {
                 headers: {
-                    'x-auth-token': token, // Send the JWT
+                    'x-auth-token': token, 
                 },
             });
             if (!response.ok) {
-                // If token is invalid or expired, force logout
                 if (response.status === 401 || response.status === 400) {
                      handleLogout();
                 }
@@ -124,21 +125,20 @@ function App() {
 
     const handleSubmitExpense = async (e) => {
         e.preventDefault();
-        // The check below uses alert(), which should be avoided in production.
-        // It's kept here for functionality, but generally, use a custom modal.
+        // Since alert() is restricted, console logging the error
         if (!description || !amount || isNaN(Number(amount))) {
-            alert('Please enter a valid description and amount.');
-            return;
+             console.error('Validation Error: Please enter a valid description and amount.');
+             setError('Please enter a valid description and amount.');
+             return;
         }
 
         setLoading(true);
         try {
-            // Path will be '/api/expenses'
             const response = await fetch(`${API_BASE_URL}/expenses`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-auth-token': token, // Send the JWT
+                    'x-auth-token': token, 
                 },
                 body: JSON.stringify({ description, amount }),
             });
@@ -148,7 +148,6 @@ function App() {
                 throw new Error(errorData.message || 'Failed to add expense');
             }
 
-            // Clear form and re-fetch list to show the new expense
             setDescription('');
             setAmount('');
             fetchExpenses();
@@ -162,15 +161,15 @@ function App() {
 
     const total = expenses.reduce((acc, expense) => acc + expense.amount, 0);
 
-    
+    // ----------------------------------------------------
     // RENDER LOGIC
-
+    // ----------------------------------------------------
 
     if (!token) {
         // Show Auth Forms
         return (
             <div className="App auth-container">
-                <h1> Expense Tracker </h1>
+                <h1>MERN Expense Tracker 🔒</h1>
                 <h2>{isLoginView ? 'Login' : 'Register'}</h2>
                 
                 {error && <p className="error">{error}</p>}
@@ -215,7 +214,7 @@ function App() {
                 <button onClick={handleLogout} className="logout-button">Logout</button>
             </div>
             
-            <h1>My Expenses</h1>
+            <h1>My Expenses 📊</h1>
             
             {/* ADD EXPENSE FORM */}
             <div className="form-section">
@@ -253,7 +252,7 @@ function App() {
                     <p>Loading expenses...</p>
                 ) : (
                     <>
-                        {/* Display Total above the table for immediate visibility */}
+                         {/* Display Total above the table for immediate visibility */}
                         <div className="total">
                             <strong>Total Expenses: ₹{total.toFixed(2)}</strong>
                         </div>
