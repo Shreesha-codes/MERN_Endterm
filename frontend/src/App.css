@@ -1,0 +1,210 @@
+/* frontend/src/App.css */
+
+/* === GLOBAL STYLES === */
+.App {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    max-width: 900px; /* Increased max width for dashboard feel */
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    color: #3f51b5; /* Deep Blue Accent */
+    margin-bottom: 30px;
+}
+
+h2 {
+    color: #555;
+    padding-bottom: 10px;
+    font-weight: 500;
+}
+
+/* === CARD STYLES (Form & List) === */
+.form-section, .list-section {
+    background-color: #ffffff; /* White background for card */
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle elevation */
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+/* === FORM STYLES (Responsive Flex) === */
+form {
+    display: flex;
+    gap: 15px; /* Spacing between elements */
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Allows stacking on mobile */
+    margin-top: 15px;
+}
+
+input[type="text"], input[type="number"] {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    flex-grow: 1;
+    min-width: 150px;
+    font-size: 1em;
+}
+
+button {
+    padding: 12px 20px;
+    background-color: #4CAF50; /* Primary Green Action Color */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-weight: 600;
+}
+
+button:hover:not([disabled]) {
+    background-color: #388e3c; /* Darker green on hover */
+    transform: translateY(-1px); /* Slight lift effect */
+}
+
+button[disabled] {
+    background-color: #a0a0a0;
+    cursor: not-allowed;
+}
+
+/* === TABLE STYLES (Data Presentation) === */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #3f51b5; /* Header blue */
+    color: white;
+    font-weight: 600;
+}
+
+/* Alternating Row Color for Readability */
+tr:nth-child(even) {
+    background-color: #f7f7f7;
+}
+
+tr:hover {
+    background-color: #e3f2fd; /* Light blue on row hover */
+    transition: background-color 0.2s;
+}
+
+.amount-cell {
+    text-align: right;
+    font-weight: bold;
+    color: #D32F2F; /* Red for expenses */
+}
+
+/* === TOTALS CARD STYLES === */
+.total {
+    margin-top: 25px;
+    padding: 15px;
+    background-color: #e8eaf6; /* Light Blue background for contrast */
+    border-radius: 6px;
+    font-size: 1.2em;
+    text-align: right;
+    border-left: 5px solid #3f51b5; /* Blue accent bar */
+}
+
+.error {
+    color: #f44336;
+    font-weight: bold;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #ffebee;
+    border-radius: 4px;
+}
+
+.footer {
+    margin-top: 30px;
+    color: #999;
+    font-size: 0.8em;
+}
+
+/* === AUTH STYLES (Kept & Enhanced) === */
+.auth-container {
+    max-width: 400px;
+    padding: 40px;
+    margin-top: 50px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Stronger shadow for login card */
+}
+
+.auth-form {
+    flex-direction: column;
+}
+
+.auth-form input {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.link-button {
+    color: #3f51b5;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.link-button:hover {
+    text-decoration: underline;
+}
+
+/* === LOGGED IN HEADER BAR (Sticky) === */
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    padding: 15px 20px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: sticky; /* Make header sticky */
+    top: 0;
+    z-index: 10;
+}
+
+.logout-button {
+    background-color: #f44336; /* Red Logout Button */
+}
+
+.logout-button:hover:not([disabled]) {
+    background-color: #d32f2f;
+    transform: none;
+}
+
+/* === RESPONSIVENESS (Mobile View) === */
+@media (max-width: 600px) {
+    .App {
+        padding: 10px;
+    }
+    
+    /* Stack form elements vertically on mobile */
+    form {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    input[type="text"], input[type="number"], button {
+        width: 100%; /* Full width on mobile */
+        min-width: 100%;
+    }
+    
+    .header-bar {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+}
