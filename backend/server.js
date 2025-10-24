@@ -4,8 +4,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const auth = require('./middleware/auth'); // Import auth middleware
 const authRoutes = require('./routes/authRoutes'); // Import auth routes
-// Ensure you have a User model file at './models/User'
-// const User = require('./models/User'); 
+// Removed unused User import to simplify, assuming User model is imported in routes or is defined elsewhere
 
 dotenv.config();
 
@@ -15,16 +14,20 @@ const PORT = process.env.PORT || 5000;
 // Middleware (CORRECTED CORS)
 // ----------------------------------------------------
 const ALLOWED_ORIGINS = [
+    // The main production domain 
     'https://mern-endterm.vercel.app',       
-    'https://mern-endterm-czx9.vercel.app', 
+    // The dynamic preview/staging domain 
+    'https://mern-endterm-czx9.vercel.app',
+    // Allow localhost for local development
     'http://localhost:3000'
 ];
 
 app.use(cors({
     origin: function(origin, callback) {
+        // Allow requests with no origin (like server-to-server)
         if (!origin) return callback(null, true);
         
-        // This allows specific origins AND any Vercel preview domain (*.vercel.app)
+        // Allow if the origin is in our specific list OR ends with .vercel.app
         if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
             return callback(null, true);
         } else {
@@ -50,10 +53,10 @@ mongoose.connect(process.env.MONGO_URI)
   });
 
 // ----------------------------------------------------
-// Mongoose Schema and Model 
-// NOTE: Re-defining Expense model here for simplicity
+// Mongoose Schema and Model (Assuming Expense model needs to be defined here)
 // ----------------------------------------------------
 const expenseSchema = new mongoose.Schema({
+  // Note: If User model is not defined/imported, Mongoose will throw an error
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -67,24 +70,29 @@ const expenseSchema = new mongoose.Schema({
 const Expense = mongoose.model('Expense', expenseSchema);
 
 // ----------------------------------------------------
-// Public Routes & AUTH ROUTES (FIXED MOUNT POINT)
+// Public Routes & AUTH ROUTES (CRITICAL ROUTE FIX APPLIED HERE)
 // ----------------------------------------------------
 app.get('/', (req, res) => {
+    // This is the root of your backend server
     res.send('Expense Tracker API is running.');
 });
 
-// FIX: Authentication routes mounted at '/auth'. 
-// Combined with vercel.json's proxy, the deployed path becomes /api/auth.
+// Authentication Routes (Registration and Login)
+// This MUST be app.use('/auth', ...) so that the Vercel proxy (/api) + /auth 
+// results in the desired /api/auth route.
 app.use('/auth', authRoutes);
 
 
 // ----------------------------------------------------
-// Protected Expense Routes (FIXED MOUNT POINT)
+// Protected Expense Routes (REQUIRES JWT) (CRITICAL ROUTE FIX APPLIED HERE)
 // ----------------------------------------------------
 
-// FIX: Expense GET route mounted at '/expenses'. Deployed path: /api/expenses
+// GET all expenses for the LOGGED-IN user
+// This MUST be app.get('/expenses', ...) so that the Vercel proxy (/api) + /expenses 
+// results in the desired /api/expenses route.
 app.get('/expenses', auth, async (req, res) => {
   try {
+    // Fix applied to Expense model usage
     const expenses = await Expense.find({ user: req.user.id }).sort({ date: -1 }); 
     res.status(200).json(expenses);
   } catch (error) {
@@ -92,7 +100,7 @@ app.get('/expenses', auth, async (req, res) => {
   }
 });
 
-// FIX: Expense POST route mounted at '/expenses'. Deployed path: /api/expenses
+// POST a new expense for the LOGGED-IN user
 app.post('/expenses', auth, async (req, res) => {
   const { description, amount } = req.body;
   if (!description || !amount) {
