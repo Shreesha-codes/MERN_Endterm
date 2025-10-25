@@ -1,8 +1,9 @@
-// client/src/App.js (FINAL CODE with DELETE feature)
+
+
 import React, { useState, useEffect } from 'react';
 import './App.css'; 
 
-// 🚨 CRITICAL: REPLACE WITH YOUR LIVE BACKEND URL (e.g., https://mern-endterm1.onrender.com)
+
 const API_BASE_URL = 'https://mern-endterm1.onrender.com'; 
 
 function App() {
@@ -11,18 +12,28 @@ function App() {
     const [userEmail, setUserEmail] = useState(null);
     const [isLoginView, setIsLoginView] = useState(true);
 
-    // State for Expenses
+    // State for Expenses (Create/Edit Form)
     const [expenses, setExpenses] = useState([]);
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
+    const [date, setDate] = useState(new Date().toISOString().substring(0, 10)); // Default to today
     
+    // State for Editing Modal
+    const [isEditing, setIsEditing] = useState(false);
+    const [currentExpense, setCurrentExpense] = useState(null); // Holds the expense being edited
+
+    // State for Filtering 
+    const [filterYear, setFilterYear] = useState('');
+    const [filterMonth, setFilterMonth] = useState('');
+    const [filterDay, setFilterDay] = useState('');
+
     // General State
     const [loading, setLoading] = useState(false);
     const [authEmail, setAuthEmail] = useState('');
     const [authPassword, setAuthPassword] = useState('');
     const [error, setError] = useState(null);
 
-    // Check token on load and set user email
+    // Load expenses/auth on mount or token/filter change
     useEffect(() => {
         if (token) {
             fetchExpenses(); 
@@ -31,7 +42,7 @@ function App() {
                 setUserEmail(savedEmail);
             }
         }
-    }, [token]);
+    }, [token, filterYear, filterMonth, filterDay]); 
 
     const handleLogout = () => {
         setToken(null);
@@ -42,9 +53,7 @@ function App() {
         setError(null);
     };
 
-    // ----------------------------------------------------
-    // AUTHENTICATION LOGIC
-    // ----------------------------------------------------
+    // --- AUTHENTICATION LOGIC ---
 
     const handleAuth = async (e) => {
         e.preventDefault();
@@ -56,9 +65,7 @@ function App() {
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json', },
                 credentials: 'include', 
                 body: JSON.stringify({ email: authEmail, password: authPassword }),
             });
@@ -80,32 +87,34 @@ function App() {
 
         } catch (err) {
             setError(err.message);
-            console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
-    // ----------------------------------------------------
-    // EXPENSE LOGIC
-    // ----------------------------------------------------
+    // --- EXPENSE LOGIC ---
 
     const fetchExpenses = async () => {
         if (!token) return;
 
         setLoading(true);
         setError(null);
+        
+        // Dynamically construct URL with filter queries
+        let queryParams = [];
+        if (filterYear) queryParams.push(`year=${filterYear}`);
+        if (filterMonth) queryParams.push(`month=${filterMonth}`);
+        if (filterDay) queryParams.push(`day=${filterDay}`);
+        
+        const url = `${API_BASE_URL}/api/expenses` + (queryParams.length ? `?${queryParams.join('&')}` : '');
+        
         try {
-            const response = await fetch(`${API_BASE_URL}/api/expenses`, {
-                headers: {
-                    'x-auth-token': token, 
-                },
+            const response = await fetch(url, {
+                headers: { 'x-auth-token': token },
                 credentials: 'include', 
             });
             if (!response.ok) {
-                if (response.status === 401 || response.status === 400) {
-                     handleLogout();
-                }
+                if (response.status === 401 || response.status === 400) { handleLogout(); }
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Failed to fetch expenses.');
             }
@@ -113,7 +122,6 @@ function App() {
             setExpenses(data);
         } catch (err) {
             setError(err.message);
-            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -135,7 +143,7 @@ function App() {
                     'x-auth-token': token, 
                 },
                 credentials: 'include', 
-                body: JSON.stringify({ description, amount }),
+                body: JSON.stringify({ description, amount, date }),
             });
 
             if (!response.ok) {
@@ -145,6 +153,7 @@ function App() {
 
             setDescription('');
             setAmount('');
+            setDate(new Date().toISOString().substring(0, 10)); // Reset date to today
             fetchExpenses();
 
         } catch (err) {
@@ -154,7 +163,6 @@ function App() {
         }
     };
 
-    // 👈 NEW FEATURE FUNCTION
     const handleDeleteExpense = async (id) => {
         if (!window.confirm("Are you sure you want to delete this expense?")) {
             return;
@@ -164,9 +172,7 @@ function App() {
         try {
             const response = await fetch(`${API_BASE_URL}/api/expenses/${id}`, {
                 method: 'DELETE',
-                headers: {
-                    'x-auth-token': token,
-                },
+                headers: { 'x-auth-token': token, },
                 credentials: 'include', 
             });
 
@@ -174,12 +180,55 @@ function App() {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Failed to delete expense');
             }
-
-            // Optimistically update UI by filtering out the deleted expense
+            // Update UI optimistically
             setExpenses(expenses.filter(expense => expense._id !== id));
             
         } catch (err) {
             setError(`Error deleting: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const openEditModal = (expense) => {
+        setCurrentExpense({
+            ...expense,
+            date: new Date(expense.date).toISOString().substring(0, 10) 
+        });
+        setIsEditing(true);
+    };
+
+    const handleUpdateExpense = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/expenses/${currentExpense._id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token, 
+                },
+                credentials: 'include', 
+                body: JSON.stringify({
+                    description: currentExpense.description,
+                    amount: currentExpense.amount,
+                    date: currentExpense.date,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update expense');
+            }
+
+            setIsEditing(false);
+            setCurrentExpense(null);
+            fetchExpenses();
+
+        } catch (err) {
+            setError(`Error updating: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -192,7 +241,7 @@ function App() {
     // ----------------------------------------------------
 
     if (!token) {
-        // Show Auth Forms
+        // ... (Authentication UI)
         return (
             <div className="App auth-container">
                 <h1>MERN Expense Tracker 🔒</h1>
@@ -201,20 +250,8 @@ function App() {
                 {error && <p className="error">{error}</p>}
 
                 <form onSubmit={handleAuth} className="auth-form">
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={authEmail}
-                        onChange={(e) => setAuthEmail(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={authPassword}
-                        onChange={(e) => setAuthPassword(e.target.value)}
-                        required
-                    />
+                    <input type="email" placeholder="Email" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} required />
+                    <input type="password" placeholder="Password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} required />
                     <button type="submit" disabled={loading}>
                         {loading ? 'Processing...' : (isLoginView ? 'Login' : 'Register')}
                     </button>
@@ -226,12 +263,9 @@ function App() {
                         {isLoginView ? 'Register' : 'Login'}
                     </button>
                 </p>
-                
             </div>
         );
     }
-
-    // Show Main App when logged in
 
     return (
         <div className="App">
@@ -240,33 +274,42 @@ function App() {
                 <button onClick={handleLogout} className="logout-button">Logout</button>
             </div>
             
-            <h1>My Expenses 📊</h1>
+            <h1>My Expenses </h1>
             
             {/* ADD EXPENSE FORM */}
             <div className="form-section">
                 <h2>Add New Expense</h2>
                 <form onSubmit={handleSubmitExpense} className="expense-form">
-                    <input
-                        type="text"
-                        placeholder="Description (e.g., Coffee, Rent)"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                        disabled={loading}
-                    />
-                    <input
-                        type="number"
-                        placeholder="Amount"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        required
-                        step="0.01"
-                        disabled={loading}
-                    />
+                    <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required disabled={loading} />
+                    <input type="text" placeholder="Description (e.g., Coffee, Rent)" value={description} onChange={(e) => setDescription(e.target.value)} required disabled={loading} />
+                    <input type="number" placeholder="Amount (₹)" value={amount} onChange={(e) => setAmount(e.target.value)} required step="0.01" disabled={loading} />
                     <button type="submit" disabled={loading}>
                         {loading ? 'Adding...' : 'Add Expense'}
                     </button>
                 </form>
+            </div>
+            
+            {/* EXPENSE FILTERING UI */}
+            <div className="filter-section">
+                <h2>Filter Expenses</h2>
+                <div className="filter-controls">
+                    <select value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>
+                        <option value="">All Years</option>
+                        {[...Array(5).keys()].map(i => {
+                            const y = new Date().getFullYear() - i;
+                            return <option key={y} value={y}>{y}</option>;
+                        })}
+                    </select>
+                    <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)} disabled={!filterYear}>
+                        <option value="">All Months</option>
+                        {[...Array(12).keys()].map(i => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('en', { month: 'long' })}</option>)}
+                    </select>
+                    <select value={filterDay} onChange={(e) => setFilterDay(e.target.value)} disabled={!filterMonth}>
+                        <option value="">All Days</option>
+                        {[...Array(31).keys()].map(i => <option key={i+1} value={i+1}>{i+1}</option>)}
+                    </select>
+                    <button className="clear-filter" onClick={() => { setFilterYear(''); setFilterMonth(''); setFilterDay(''); }}>Clear Filters</button>
+                </div>
             </div>
 
             {/* EXPENSE LIST */}
@@ -274,17 +317,14 @@ function App() {
                 <h2>Expense Summary</h2>
                 {error && <p className="error">{error}</p>}
                 
-                {loading && expenses.length === 0 ? (
-                    <p>Loading expenses...</p>
-                ) : (
+                {loading && expenses.length === 0 ? (<p>Loading expenses...</p>) : (
                     <>
-                         {/* Display Total above the table for immediate visibility */}
                         <div className="total">
-                            <strong>Total Expenses: ₹{total.toFixed(2)}</strong>
+                            <strong>Total Filtered Expenses: ₹{total.toFixed(2)}</strong>
                         </div>
 
                         {expenses.length === 0 ? (
-                            <p style={{marginTop: '20px', textAlign: 'center'}}>No expenses recorded yet. Add one above!</p>
+                            <p style={{marginTop: '20px', textAlign: 'center'}}>No expenses recorded or no expenses match the filter criteria.</p>
                         ) : (
                             <table>
                                 <thead>
@@ -292,7 +332,7 @@ function App() {
                                         <th>Date</th>
                                         <th>Description</th>
                                         <th style={{textAlign: 'right'}}>Amount (₹)</th>
-                                        <th>Action</th> {/* 👈 NEW COLUMN */}
+                                        <th style={{textAlign: 'center'}}>Action</th> 
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -301,15 +341,10 @@ function App() {
                                             <td>{new Date(expense.date).toLocaleDateString()}</td>
                                             <td>{expense.description}</td>
                                             <td className="amount-cell">₹{expense.amount.toFixed(2)}</td>
-                                            <td>
-                                                <button 
-                                                    onClick={() => handleDeleteExpense(expense._id)} 
-                                                    className="delete-item-button" 
-                                                    disabled={loading}
-                                                >
-                                                    Delete
-                                                </button>
-                                            </td> {/* 👈 NEW BUTTON */}
+                                            <td className="action-cell">
+                                                <button onClick={() => openEditModal(expense)} className="edit-item-button" disabled={loading}>Edit</button>
+                                                <button onClick={() => handleDeleteExpense(expense._id)} className="delete-item-button" disabled={loading}>Delete</button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -320,6 +355,27 @@ function App() {
             </div>
 
             <p className="footer">Only expenses belonging to **{userEmail}** are shown.</p>
+            
+            {/* EDIT MODAL */}
+            {isEditing && currentExpense && (
+                <div className="modal-backdrop">
+                    <div className="modal">
+                        <h3>Edit Expense</h3>
+                        <form onSubmit={handleUpdateExpense} className="edit-form">
+                            <label>Date:</label>
+                            <input type="date" value={currentExpense.date} onChange={(e) => setCurrentExpense({...currentExpense, date: e.target.value})} required />
+                            <label>Description:</label>
+                            <input type="text" value={currentExpense.description} onChange={(e) => setCurrentExpense({...currentExpense, description: e.target.value})} required />
+                            <label>Amount:</label>
+                            <input type="number" value={currentExpense.amount} onChange={(e) => setCurrentExpense({...currentExpense, amount: e.target.value})} required step="0.01" />
+                            <div className="modal-actions">
+                                <button type="submit" disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</button>
+                                <button type="button" onClick={() => setIsEditing(false)} className="cancel-button" disabled={loading}>Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
