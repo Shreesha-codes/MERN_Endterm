@@ -1,15 +1,17 @@
 // client/src/App.js
-import React, { useState, useEffect } from 'react';
-import './App.css'; // Don't forget to create and link the CSS file!
 
-// CRITICAL: Replace this with your actual live Render domain, e.g., 'https://mern-endterm2.onrender.com'
-const API_BASE_URL = 'https://my-mern-api.onrender.com'; 
+import React, { useState, useEffect } from 'react';
+import './App.css'; 
+// Install React-router-dom for navigation: npm install react-router-dom
+
+// 🚨 CRITICAL: REPLACE WITH YOUR LIVE BACKEND URL (e.g., https://mern-endterm1.onrender.com)
+const API_BASE_URL = 'https://mern-endterm1.onrender.com'; 
 
 function App() {
     // State for Auth
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [userEmail, setUserEmail] = useState(null);
-    const [isLoginView, setIsLoginView] = useState(true); // Toggle between Login/Register
+    const [isLoginView, setIsLoginView] = useState(true);
 
     // State for Expenses
     const [expenses, setExpenses] = useState([]);
@@ -33,6 +35,15 @@ function App() {
         }
     }, [token]);
 
+    const handleLogout = () => {
+        setToken(null);
+        setUserEmail(null);
+        setExpenses([]);
+        localStorage.removeItem('token');
+        localStorage.removeItem('userEmail'); 
+        setError(null);
+    };
+
     // ----------------------------------------------------
     // AUTHENTICATION LOGIC
     // ----------------------------------------------------
@@ -42,16 +53,17 @@ function App() {
         setLoading(true);
         setError(null);
         
-        // Use the endpoint path directly
-        const endpoint = isLoginView ? '/auth/login' : '/auth/register'; 
+        // Matches the Express route: /api/auth/login or /api/auth/register
+        const endpoint = isLoginView ? '/api/auth/login' : '/api/auth/register'; 
 
         try {
-            // CRITICAL FIX: Explicitly prepend /api/ to the fetch call
-            const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                // 💡 CONDITION 2: Include credentials for authentication
+                credentials: 'include', 
                 body: JSON.stringify({ email: authEmail, password: authPassword }),
             });
 
@@ -79,15 +91,6 @@ function App() {
         }
     };
 
-    const handleLogout = () => {
-        setToken(null);
-        setUserEmail(null);
-        setExpenses([]);
-        localStorage.removeItem('token');
-        localStorage.removeItem('userEmail'); 
-        setError(null);
-    };
-
     // ----------------------------------------------------
     // EXPENSE LOGIC
     // ----------------------------------------------------
@@ -98,11 +101,13 @@ function App() {
         setLoading(true);
         setError(null);
         try {
-            // CRITICAL FIX: Explicitly use /api/expenses
+            // Matches the Express route: /api/expenses
             const response = await fetch(`${API_BASE_URL}/api/expenses`, {
                 headers: {
                     'x-auth-token': token, 
                 },
+                // 💡 CONDITION 2: Include credentials for protected GET request
+                credentials: 'include', 
             });
             if (!response.ok) {
                 if (response.status === 401 || response.status === 400) {
@@ -123,7 +128,6 @@ function App() {
 
     const handleSubmitExpense = async (e) => {
         e.preventDefault();
-        // NOTE: Standard practice is to use a modal/message box instead of alert()
         if (!description || !amount || isNaN(Number(amount))) {
             console.error('Validation Error: Please enter a valid description and amount.');
             return;
@@ -131,13 +135,15 @@ function App() {
 
         setLoading(true);
         try {
-            // CRITICAL FIX: Explicitly use /api/expenses
+            // Matches the Express route: /api/expenses
             const response = await fetch(`${API_BASE_URL}/api/expenses`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'x-auth-token': token, 
                 },
+                // 💡 CONDITION 2: Include credentials for protected POST request
+                credentials: 'include', 
                 body: JSON.stringify({ description, amount }),
             });
 
@@ -157,11 +163,10 @@ function App() {
         }
     };
 
-    // Calculate total expenses for display
     const total = expenses.reduce((acc, expense) => acc + expense.amount, 0);
 
     // ----------------------------------------------------
-    // RENDER LOGIC
+    // RENDER LOGIC 
     // ----------------------------------------------------
 
     if (!token) {
