@@ -1,39 +1,74 @@
-/* client/src/App.css */
+/* client/src/App.css - MODERN STYLES WITH ANIMATION */
+
+:root {
+    --primary-color: #3498db; /* Blue */
+    --secondary-color: #2ecc71; /* Green */
+    --danger-color: #e74c3c; /* Red */
+    --bg-light: #f4f6f9;
+    --text-dark: #2c3e50;
+    --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
-    background-color: #f4f6f9;
-    font-family: Arial, sans-serif;
-    padding-top: 20px;
+    background-color: var(--bg-light);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 40px 20px;
+    min-height: 100vh;
 }
 
 .App {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     background-color: #ffffff;
-    padding: 30px;
+    padding: 30px 40px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--box-shadow);
+    color: var(--text-dark);
 }
 
 h1 {
     text-align: center;
-    color: #2c3e50;
+    color: var(--primary-color);
     margin-bottom: 25px;
+    font-size: 2.2rem;
+    letter-spacing: 0.5px;
 }
 
 h2 {
-    color: #3498db;
-    border-bottom: 2px solid #ecf0f1;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--bg-light);
     padding-bottom: 10px;
     margin-top: 30px;
     margin-bottom: 20px;
+    font-size: 1.5rem;
 }
 
-/* --- Authentication Styles --- */
+/* --- Global Transitions and Effects --- */
+
+button, input {
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* --- 1. Authentication Section --- */
 
 .auth-container {
     max-width: 400px;
-    margin-top: 80px;
-    text-align: center;
+    margin: 80px auto;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .auth-form input {
@@ -41,46 +76,37 @@ h2 {
     width: 100%;
     padding: 12px;
     margin-bottom: 15px;
-    border: 1px solid #bdc3c7;
+    border: 1px solid #ddd;
     border-radius: 6px;
     box-sizing: border-box;
 }
 
-.auth-form button, .logout-button {
-    width: 100%;
-    padding: 12px;
-    background-color: #2ecc71;
+.auth-form button {
+    background-color: var(--primary-color);
     color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s;
 }
 
-.auth-form button:hover, .logout-button:hover {
-    background-color: #27ae60;
-}
-
-.link-button {
-    background: none;
-    color: #3498db;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    text-decoration: underline;
+.auth-form button:hover {
+    background-color: #2980b9;
 }
 
 .error {
-    color: #e74c3c;
-    background-color: #fceae9;
+    color: var(--danger-color);
+    background-color: #fdd;
     padding: 10px;
     border-radius: 4px;
     margin-bottom: 15px;
     text-align: center;
+    border: 1px solid var(--danger-color);
+    animation: fadeIn 0.5s;
 }
 
-/* --- Main App Styles --- */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* --- 2. Header and Logout --- */
 
 .header-bar {
     display: flex;
@@ -88,50 +114,74 @@ h2 {
     align-items: center;
     margin-bottom: 30px;
     padding: 10px 0;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 2px solid var(--primary-color);
 }
+
+.logout-button {
+    padding: 8px 15px;
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background-color: #c0392b;
+}
+
+/* --- 3. Add Expense Form --- */
 
 .expense-form {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 3fr 1.5fr 1fr;
     gap: 15px;
-    align-items: center;
+    align-items: stretch; /* Ensures buttons and inputs align nicely */
+    background-color: #f7f9fb;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #eee;
 }
 
 .expense-form input {
-    padding: 10px;
-    border: 1px solid #bdc3c7;
+    padding: 12px;
+    border: 1px solid #ccc;
     border-radius: 4px;
 }
 
 .expense-form button {
-    padding: 10px 15px;
-    background-color: #3498db;
+    padding: 12px 15px;
+    background-color: var(--secondary-color);
     color: white;
     border: none;
     border-radius: 4px;
-    cursor: pointer;
+    font-weight: bold;
 }
 
 .expense-form button:hover {
-    background-color: #2980b9;
+    background-color: #27ae60;
 }
 
-/* --- List/Table Styles --- */
+/* --- 4. Expense List and Summary --- */
 
 .total {
-    background-color: #ecf0f1;
-    padding: 15px;
-    border-radius: 6px;
-    margin-bottom: 20px;
+    background: linear-gradient(90deg, var(--primary-color), #5dade2);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
     text-align: center;
-    font-size: 1.2em;
+    font-size: 1.4rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden; /* Ensures borders/shadows look clean */
 }
 
 th, td {
@@ -141,24 +191,44 @@ th, td {
 }
 
 th {
-    background-color: #34495e;
+    background-color: var(--text-dark);
     color: white;
     font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9em;
 }
 
-tr:hover {
-    background-color: #f9f9f9;
+tbody tr {
+    transition: background-color 0.3s ease;
+}
+
+tbody tr:hover {
+    background-color: #e8f4fd; /* Light blue hover for rows */
 }
 
 .amount-cell {
     text-align: right;
+    font-weight: 600;
+    color: var(--danger-color); /* Highlight expense amount in red */
+}
+/* client/src/App.css - Append this to the end */
+
+.delete-item-button {
+    padding: 6px 10px;
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
     font-weight: 500;
-    color: #2ecc71;
+    font-size: 0.9em;
 }
 
-.footer {
-    text-align: center;
-    color: #95a5a6;
-    margin-top: 40px;
-    font-size: 0.9em;
+.delete-item-button:hover {
+    background-color: #c0392b;
+    transform: translateY(-1px);
+}
+
+td:last-child {
+    text-align: center; /* Center the delete button in its column */
 }

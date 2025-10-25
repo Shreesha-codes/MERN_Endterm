@@ -1,4 +1,4 @@
-// server.js (CORS Configuration Update)
+// server.js (Final Code with DELETE route)
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -13,18 +13,16 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- CORS Configuration (Corrected for Credentials and Deployment) ---
+// --- CORS Configuration (Keep this robust CORS configuration) ---
 const ALLOWED_ORIGINS = [
-    'https://mern-endterm2.onrender.com', // Your explicit frontend domain
+    'https://mern-endterm2.onrender.com', 
     'http://localhost:3000'
 ];
 
-app.use("*",cors({
+app.use(cors({
     origin: function(origin, callback) {
-        // Allow requests with no origin (like Postman or server-to-server calls)
         if (!origin) return callback(null, true);
         
-        // Check if the origin is in our allowed list OR if it ends with a trusted deployment domain suffix
         if (
             ALLOWED_ORIGINS.includes(origin) || 
             origin.endsWith('.vercel.app') || 
@@ -37,7 +35,7 @@ app.use("*",cors({
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true // Crucial for JWT headers and preflight checks
+    credentials: true 
 }));
 
 app.use(express.json()); 
@@ -69,12 +67,13 @@ const Expense = mongoose.model('Expense', expenseSchema);
 app.get('/', (req, res) => {
     res.send('Expense Tracker API is running.');
 });
+// The actual path the frontend uses: /api/auth/login
 app.use('/api/auth', authRoutes);
 
 
 // --- Protected Expense Routes (REQUIRES JWT) ---
 
-// GET all expenses for the LOGGED-IN user
+// GET all expenses for the LOGGED-IN user (READ)
 app.get('/api/expenses', auth, async (req, res) => {
     try {
         const expenses = await Expense.find({ user: req.user.id }).sort({ date: -1 }); 
@@ -84,7 +83,7 @@ app.get('/api/expenses', auth, async (req, res) => {
     }
 });
 
-// POST a new expense for the LOGGED-IN user
+// POST a new expense for the LOGGED-IN user (CREATE)
 app.post('/api/expenses', auth, async (req, res) => {
     const { description, amount } = req.body;
     if (!description || !amount) {
@@ -100,6 +99,25 @@ app.post('/api/expenses', auth, async (req, res) => {
         res.status(201).json(savedExpense);
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+});
+
+// DELETE an expense by ID (DELETE) 👈 NEW FEATURE
+app.delete('/api/expenses/:id', auth, async (req, res) => {
+    try {
+        const expense = await Expense.findOneAndDelete({ 
+            _id: req.params.id, 
+            user: req.user.id // Ensure only the owner can delete it
+        });
+
+        if (!expense) {
+            // Either the ID was wrong or the expense did not belong to the user
+            return res.status(404).json({ message: 'Expense not found or unauthorized.' });
+        }
+
+        res.status(200).json({ message: 'Expense deleted successfully.' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 

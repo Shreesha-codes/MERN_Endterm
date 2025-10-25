@@ -1,8 +1,6 @@
-// client/src/App.js
-
+// client/src/App.js (FINAL CODE with DELETE feature)
 import React, { useState, useEffect } from 'react';
 import './App.css'; 
-// Install React-router-dom for navigation: npm install react-router-dom
 
 // 🚨 CRITICAL: REPLACE WITH YOUR LIVE BACKEND URL (e.g., https://mern-endterm1.onrender.com)
 const API_BASE_URL = 'https://mern-endterm1.onrender.com'; 
@@ -53,7 +51,6 @@ function App() {
         setLoading(true);
         setError(null);
         
-        // Matches the Express route: /api/auth/login or /api/auth/register
         const endpoint = isLoginView ? '/api/auth/login' : '/api/auth/register'; 
 
         try {
@@ -62,7 +59,6 @@ function App() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                // 💡 CONDITION 2: Include credentials for authentication
                 credentials: 'include', 
                 body: JSON.stringify({ email: authEmail, password: authPassword }),
             });
@@ -73,7 +69,6 @@ function App() {
                 throw new Error(data.message || (isLoginView ? 'Login failed.' : 'Registration failed.'));
             }
 
-            // Success: Save token and user email
             localStorage.setItem('token', data.token);
             localStorage.setItem('userEmail', data.user.email || authEmail); 
             setToken(data.token);
@@ -101,12 +96,10 @@ function App() {
         setLoading(true);
         setError(null);
         try {
-            // Matches the Express route: /api/expenses
             const response = await fetch(`${API_BASE_URL}/api/expenses`, {
                 headers: {
                     'x-auth-token': token, 
                 },
-                // 💡 CONDITION 2: Include credentials for protected GET request
                 credentials: 'include', 
             });
             if (!response.ok) {
@@ -135,14 +128,12 @@ function App() {
 
         setLoading(true);
         try {
-            // Matches the Express route: /api/expenses
             const response = await fetch(`${API_BASE_URL}/api/expenses`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'x-auth-token': token, 
                 },
-                // 💡 CONDITION 2: Include credentials for protected POST request
                 credentials: 'include', 
                 body: JSON.stringify({ description, amount }),
             });
@@ -158,6 +149,37 @@ function App() {
 
         } catch (err) {
             setError(`Error submitting: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 👈 NEW FEATURE FUNCTION
+    const handleDeleteExpense = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this expense?")) {
+            return;
+        }
+        
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/expenses/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'x-auth-token': token,
+                },
+                credentials: 'include', 
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to delete expense');
+            }
+
+            // Optimistically update UI by filtering out the deleted expense
+            setExpenses(expenses.filter(expense => expense._id !== id));
+            
+        } catch (err) {
+            setError(`Error deleting: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -270,6 +292,7 @@ function App() {
                                         <th>Date</th>
                                         <th>Description</th>
                                         <th style={{textAlign: 'right'}}>Amount (₹)</th>
+                                        <th>Action</th> {/* 👈 NEW COLUMN */}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -278,6 +301,15 @@ function App() {
                                             <td>{new Date(expense.date).toLocaleDateString()}</td>
                                             <td>{expense.description}</td>
                                             <td className="amount-cell">₹{expense.amount.toFixed(2)}</td>
+                                            <td>
+                                                <button 
+                                                    onClick={() => handleDeleteExpense(expense._id)} 
+                                                    className="delete-item-button" 
+                                                    disabled={loading}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td> {/* 👈 NEW BUTTON */}
                                         </tr>
                                     ))}
                                 </tbody>
