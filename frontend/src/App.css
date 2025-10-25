@@ -1,6 +1,6 @@
 
 
-
+/* Google Font: 'Space Mono' or similar sci-fi vibe */
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 
 :root {
@@ -11,6 +11,7 @@
     --bg-dark: #120A2C; /* Dark Galaxy Purple */
     --bg-surface: #201340; /* Slightly lighter module background */
     --text-light: #f4f6f9;
+    --text-dark: #0A0714; /* Dark text for light buttons */
     --card-shadow: 0 0 15px rgba(163, 107, 239, 0.4); /* Neon shadow */
     --transition-speed: 0.2s;
 }
@@ -73,6 +74,12 @@ button:hover:not(:disabled) {
     transform: scale(1.02);
     box-shadow: 0 0 10px rgba(52, 224, 161, 0.6);
 }
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
 
 input, select {
     background-color: #31215C;
@@ -102,14 +109,33 @@ input:focus, select:focus {
 .auth-form button {
     background-color: var(--primary-color);
     color: var(--text-light);
+    width: 100%; /* Make auth buttons full width */
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
 }
 .auth-form button:hover {
     background-color: #8D54DB;
+}
+.toggle-auth {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9em;
 }
 .link-button {
     background: none;
     color: var(--secondary-color);
     text-decoration: underline;
+    cursor: pointer;
+    font-size: 1em; /* Ensure it's readable */
+    padding: 0;
+    margin: 0;
+    display: inline;
+}
+.link-button:hover {
+    text-decoration: none;
 }
 .error {
     color: var(--danger-color);
@@ -117,6 +143,13 @@ input:focus, select:focus {
     border: 1px dashed var(--danger-color);
     padding: 10px;
     border-radius: 4px;
+    text-align: center;
+    margin-bottom: 15px;
+    animation: fadeIn 0.5s;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 /* --- 2. Header and Logout --- */
@@ -232,13 +265,26 @@ tbody tr:hover {
     white-space: nowrap; 
 }
 
-/* Action Buttons */
+/* Action Buttons - ENHANCED VISIBILITY AND SPACING */
+.edit-item-button,
+.delete-item-button {
+    padding: 8px 14px; /* Slightly larger padding */
+    font-size: 0.95em; /* Slightly larger font */
+    font-weight: bold; /* More prominent text */
+    border-radius: 5px; /* Slightly rounded */
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Subtle button shadow */
+    margin: 0 4px; /* Space between buttons */
+    min-width: 70px; /* Ensure consistent width */
+}
+
 .edit-item-button {
     background-color: var(--edit-color);
-    color: var(--text-dark);
+    color: var(--text-dark); /* Dark text for contrast on bright button */
 }
 .edit-item-button:hover {
     background-color: #E0B44E;
+    box-shadow: 0 0 12px rgba(255, 199, 89, 0.8); /* Neon glow on hover */
 }
 .delete-item-button {
     background-color: var(--danger-color);
@@ -246,56 +292,115 @@ tbody tr:hover {
 }
 .delete-item-button:hover {
     background-color: #D64359;
+    box-shadow: 0 0 12px rgba(255, 90, 115, 0.8); /* Neon glow on hover */
 }
+
+/* Optional: Add a subtle divider between buttons if desired, or rely on margin */
+/* .action-cell > button:first-child::after {
+    content: '|';
+    color: rgba(255,255,255,0.3);
+    margin-left: 8px;
+} */
+
 
 /* --- 5. Modal Styles (Editing Panel) --- */
 
 .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background-color: rgba(18, 10, 44, 0.8); /* Darker backdrop */
-    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* Ensure it's above other content */
+    animation: fadeIn 0.3s;
 }
 .modal {
     background-color: #31215C;
+    padding: 30px;
     border-radius: 10px;
     box-shadow: 0 0 30px rgba(163, 107, 239, 0.7);
     border: 2px solid var(--secondary-color);
+    width: 90%;
+    max-width: 500px;
+    transform: scale(1);
+    animation: zoomIn 0.3s;
 }
 .modal h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
     color: var(--secondary-color);
     border-bottom: 1px solid rgba(163, 107, 239, 0.4);
+    padding-bottom: 10px;
 }
-
 .edit-form label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-weight: bold;
     color: var(--text-light);
 }
-
+.edit-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    background-color: #201340; /* Match modal background */
+    color: var(--text-light);
+}
+.edit-form input:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 5px rgba(52, 224, 161, 0.8);
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+.modal-actions button {
+    padding: 10px 15px;
+    font-weight: bold;
+    border-radius: 6px;
+}
 .modal-actions button[type="submit"] {
     background-color: var(--edit-color);
     color: var(--text-dark);
 }
 .modal-actions button[type="submit"]:hover {
-    background-color: #d35400;
+    background-color: #E0B44E;
 }
-
 .cancel-button {
-    background-color: #5d6d7e; /* Less aggressive gray */
+    background-color: #5d6d7e; 
     color: var(--text-light);
 }
 .cancel-button:hover {
     background-color: #4a5d6f;
 }
 
-/* --- Responsive Adjustments (Space Modules must be compact on mobile) --- */
+@keyframes zoomIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* --- Responsive Adjustments --- */
 @media (max-width: 768px) {
     .App {
         padding: 20px;
     }
     .expense-form {
-        grid-template-columns: 1fr 1fr; /* 2 columns on mobile */
+        grid-template-columns: 1fr; /* Stack inputs on mobile */
     }
     .expense-form input:nth-child(2), /* Description input */
     .expense-form input:nth-child(3) { /* Amount input */
-        grid-column: span 2; 
+        grid-column: span 1; 
+    }
+    .expense-form button {
+        grid-column: span 1;
     }
     .filter-controls {
         flex-direction: column;
@@ -303,5 +408,17 @@ tbody tr:hover {
     }
     .filter-controls select, .filter-controls button {
         width: 100%;
+    }
+    .action-cell {
+        display: flex; /* Arrange buttons in a row */
+        justify-content: center;
+        gap: 5px; /* Smaller gap on mobile */
+        flex-wrap: wrap; /* Allow wrapping if space is too tight */
+    }
+    .edit-item-button, .delete-item-button {
+        flex-grow: 1; /* Allow buttons to grow to fill space */
+        margin: 2px; /* Reduce margin */
+        padding: 6px 10px; /* Adjust padding for smaller size */
+        font-size: 0.85em; /* Smaller font on mobile */
     }
 }
