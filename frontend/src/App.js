@@ -1,4 +1,9 @@
-const API_BASE_URL = 'https://my-mern-api.onrender.com'; // CRITICAL: This is your live Render domain, NOT including /api
+// client/src/App.js
+import React, { useState, useEffect } from 'react';
+import './App.css'; // Don't forget to create and link the CSS file!
+
+// CRITICAL: Replace this with your actual live Render domain, e.g., 'https://mern-endterm2.onrender.com'
+const API_BASE_URL = 'https://my-mern-api.onrender.com'; 
 
 function App() {
     // State for Auth
@@ -152,6 +157,7 @@ function App() {
         }
     };
 
+    // Calculate total expenses for display
     const total = expenses.reduce((acc, expense) => acc + expense.amount, 0);
 
     // ----------------------------------------------------
@@ -212,7 +218,7 @@ function App() {
             {/* ADD EXPENSE FORM */}
             <div className="form-section">
                 <h2>Add New Expense</h2>
-                <form onSubmit={handleSubmitExpense}>
+                <form onSubmit={handleSubmitExpense} className="expense-form">
                     <input
                         type="text"
                         placeholder="Description (e.g., Coffee, Rent)"
@@ -258,7 +264,7 @@ function App() {
                                     <tr>
                                         <th>Date</th>
                                         <th>Description</th>
-                                        <th style={{textAlign: 'right'}}>Amount</th>
+                                        <th style={{textAlign: 'right'}}>Amount (₹)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
