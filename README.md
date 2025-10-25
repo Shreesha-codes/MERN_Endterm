@@ -1,127 +1,94 @@
-simple MERN Expense Tracker with JWT Authentication 
+🚀 MERN Expense Tracker (Cosmic Station Edition):
 
-This project is a fully authenticated, full-stack expense tracking application built using the MERN stack (MongoDB, Express, React, Node.js). It demonstrates proficiency in core web development concepts, including secure user authentication (JWT), data persistence, and responsive UI design.
+Project Overview:
+
+The MERN Expense Tracker is a secure, full-stack web application designed to help users monitor and manage their personal expenses. Built with the MERN stack (MongoDB, Express.js, React, Node.js), this application features secure JWT-based user authentication and a responsive UI inspired by a Space Station/Cosmic theme.
+
+Key Features Implemented:
+🔒 Secure User Authentication: Register and Login via JSON Web Tokens (JWT) and bcrypt password hashing.
+
+➕ Full CRUD Operations: Users can Create, Read, Update, and Delete their own expense records.
+
+📊 Advanced Filtering: Expenses can be filtered dynamically by Year, Month, or Day.
+
+🎨 Animated UI: Modern, dark-themed UI with clean tables, subtle animations, and a distinct visual style.
+
+🔗 Deployment Ready: Configured with robust CORS policies to ensure seamless communication between separate Render/Vercel services.
+
+🛠️ Tech Stack
+Frontend (Client)
+React: For the dynamic, component-based user interface.
+
+JavaScript (Fetch API): For making asynchronous API requests to the backend.
+
+HTML/CSS: Custom styling for the Space Station theme.
+
+Backend (Server)
+Node.js & Express.js: The application's server and REST API framework.
+
+MongoDB & Mongoose: NoSQL database and Object Data Modeling (ODM) for managing structured expense data.
+
+JSON Web Tokens (JWT): Used for stateless, secure user sessions.
+
+Bcrypt.js: Used to hash and secure user passwords in the database.
+
+CORS: Explicitly configured to allow cross-origin requests from the deployed frontend.
+
+🔗 Live Application & Deployment
+This application is typically deployed across two separate services for maximum stability:
+
+Component,Example Deployment Platform,Example Live URL
+Frontend (React),Vercel / Render Static Site,https://mern-endterm2.onrender.com
+Backend (Express API),Render Web Service,https://mern-endterm1.onrender.com
 
 
+Database Setup
+The backend connects to MongoDB Atlas using the MONGO_URI environment variable.
 
-Frontend Application (REQUIRED SUBMISSION LINK)
+The system uses two core models: User and Expense.
 
-https://mern-endterm2.onrender.com/
-
-
-Backend API Endpoint : https://mern-endterm1.onrender.com/
-
-GitHub Repository:
-
-https://github.com/Shreesha-codes/MERN_Endterm
-
-
-Core Features Implemented
-
-The application provides multi-user support, ensuring that user data is secure and isolated.
-
-JWT-Based Authentication:
-
-Registration (/auth/register): Creates new users with securely hashed passwords (using bcryptjs).
-
-Login (/auth/login): Authenticates users and issues a short-lived JSON Web Token (JWT).
-
-Authorization: The JWT is stored on the client side and sent with every request to access protected routes.
-
-Data Authorization & Isolation:
-
-The auth middleware protects the expense routes.
-
-All expense documents in MongoDB are linked to a specific userId.
-
-Users can only Create (POST) and Read (GET) expenses belonging to their own account.
-
-CRUD Functionality (Create & Read):
-
-Create (POST): Users can submit new expense entries (description and amount).
-
-Read (GET): Fetches and displays the user's list of expenses in a clean, high-contrast table format.
-
-Responsive UI/UX: Built with React and clean CSS, featuring a fluid, card-based layout optimized for both desktop and mobile devices.
-
-Technology Stack
-
-Frontend (R)
-
-React.js
-
-Single Page Application (SPA) for the user interface.
-
-Backend (E & N)
-
-Node.js & Express.js
-
-Creates the RESTful API endpoints for authentication and data operations.
-
-Database (M)
-
-MongoDB Atlas
-
-Cloud-hosted NoSQL database for flexible data storage.
-
-Security
-
-JWT, bcryptjs
-
-Securing user passwords and stateless session management.
-
-Local Setup and Installation
-
-Follow these steps to run the project on your local machine:
-
+⚙️ Setup and Installation
 Prerequisites
+You must have Node.js and npm installed.
 
-Node.js (LTS recommended)
+Clone the repository:git clone https://github.com/Shreesha-codes/MERN_Endterm.git
+cd MERN_Endterm
 
-MongoDB Atlas Account (for cloud database)
+npm install
 
-Backend Setup (backend/)
+npx create-react-app client # If not already done
+npm install --prefix client
 
-Navigate to the backend directory: cd backend
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.dk5pkej.mongodb.net/expense_tracker
+JWT_SECRET=YOUR_VERY_LONG_COMPLEX_SECRET_STRING_HERE
+PORT=5000
 
-Install dependencies: npm install
+Local Run Instructions
+Run Backend (in Terminal 1):
 
-Create .env file: Create a file named .env in the backend/ folder and add your credentials:
+Bash
 
-MONGO_URI=mongodb+srv://basaravanishreesha_db_user:Shreesha1234@cluster0.dk5pkej.mongodb.net/
+npm run server
+# Server should start on port 5000
+Run Frontend (in Terminal 2):
 
+Bash
 
-Run the server: npm run dev (Runs on http://localhost:5000)
+npm run client
+# Client should open on port 3000
 
-Frontend Setup (frontend/)
+🔑 Backend API Endpoints
+All endpoints are prefixed with /api.
 
-Navigate to the frontend directory: cd frontend
+Method,Route,Description,Auth Required?
+POST,/api/auth/register,Creates a new user account.,No
+POST,/api/auth/login,Authenticates user; returns JWT token.,No
+GET,/api/expenses,READ: Fetches all expenses for the authenticated user. Accepts ?year=Y&month=M&day=D query params.,Yes
+POST,/api/expenses,CREATE: Adds a new expense record.,Yes
+PATCH,/api/expenses/:id,UPDATE: Modifies an existing expense record.,Yes
+DELETE,/api/expenses/:id,DELETE: Removes an expense record.,Yes
 
-Install dependencies: npm install
+⚠️ Important Deployment Note (CORS/JWT)
+Cross-Origin Fix: The backend (server.js) includes a custom cors configuration that specifically allows requests from the Vercel/Render frontend domains and uses credentials: true.
 
-Set API URL: In frontend/src/App.js, temporarily set API_BASE_URL to your local backend:
-
-const API_BASE_URL = 'http://localhost:5000/api';
-
-
-Run the client: npm start (Runs on http://localhost:3000)
-
-Deployment Instructions (Monorepo)
-
-The project is structured as a Monorepo, meaning the Frontend and Backend are in separate folders but share the same repository.
-
-API Deployment (Render):
-
-Deploy the backend folder as a Web Service.
-
-Crucial: Set MONGO_URI and JWT_SECRET as Environment Variables on the host.
-
-The routing is configured via the vercel.json file in the repository root, which redirects /api/* traffic to the Node.js server.
-
-App Deployment (render):
-
-Deploy the frontend folder as a Static Site.
-
-Crucial: During setup, set the Root Directory or Base Directory to frontend.
-
-The App.js file is updated to use the live API URL obtained from the first deployment ste
+Frontend Fetch: The frontend (App.js) mirrors this by adding credentials: 'include' to every API call, ensuring the x-auth-token (JWT) is sent and the response is accepted by the browser.
