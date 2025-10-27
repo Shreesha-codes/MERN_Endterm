@@ -4,8 +4,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const auth = require('./middleware/auth'); 
-const authRoutes = require('./routes/authRoutes'); 
+const auth = require('./middleware/auth');
+const authRoutes = require('./routes/authRoutes');
 const User = require('./models/User'); // Required for Expense ref
 
 dotenv.config();
@@ -15,17 +15,17 @@ const PORT = process.env.PORT || 5000;
 
 
 const ALLOWED_ORIGINS = [
-    'https://mern-endterm2.onrender.com', 
-    'http://localhost:3000'
+    'https://mern-endterm2.onrender.com',
+    'http://localhost:3000','*'
 ];
 
 app.use(cors({
     origin: function(origin, callback) {
         if (!origin) return callback(null, true);
-        
+
         if (
-            ALLOWED_ORIGINS.includes(origin) || 
-            origin.endsWith('.vercel.app') || 
+            ALLOWED_ORIGINS.includes(origin) ||
+            origin.endsWith('.vercel.app') ||
             origin.endsWith('.onrender.com')
         ) {
             return callback(null, true);
@@ -34,11 +34,11 @@ app.use(cors({
             return callback(new Error(msg), false);
         }
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], 
-    credentials: true 
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true
 }));
 
-app.use(express.json()); 
+app.use(express.json());
 
 // --- MongoDB Connection ---
 mongoose.connect(process.env.MONGO_URI)
@@ -49,12 +49,12 @@ mongoose.connect(process.env.MONGO_URI)
   });
 
 
-//  Mongoose Schema and Model (Expense) 
+//  Mongoose Schema and Model (Expense)
 const expenseSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true, 
+        required: true,
     },
     description: { type: String, required: true },
     amount: { type: Number, required: true },
@@ -81,7 +81,7 @@ app.get('/api/expenses', auth, async (req, res) => {
         // CONSTRUCTING THE DYNAMIC DATE FILTER
         if (year || month || day) {
             let startDate, endDate;
-            
+
             if (year && month && day) {
                 // Day-wise filter
                 startDate = new Date(year, month - 1, day);
@@ -101,7 +101,7 @@ app.get('/api/expenses', auth, async (req, res) => {
             }
         }
 
-        const expenses = await Expense.find(filter).sort({ date: -1 }); 
+        const expenses = await Expense.find(filter).sort({ date: -1 });
         res.status(200).json(expenses);
     } catch (error) {
         console.error("Filtering error:", error);
@@ -111,13 +111,13 @@ app.get('/api/expenses', auth, async (req, res) => {
 
 // POST a new expense for the LOGGED-IN user (CREATE)
 app.post('/api/expenses', auth, async (req, res) => {
-    const { description, amount, date } = req.body; 
+    const { description, amount, date } = req.body;
     if (!description || !amount) {
         return res.status(400).json({ message: 'Description and amount are required.' });
     }
-    const newExpense = new Expense({ 
+    const newExpense = new Expense({
         user: req.user.id,
-        description, 
+        description,
         amount: Number(amount),
         date: date ? new Date(date) : new Date(), // Use provided date or current date
     });
@@ -136,12 +136,12 @@ app.patch('/api/expenses/:id', auth, async (req, res) => {
     try {
         const updatedExpense = await Expense.findOneAndUpdate(
             { _id: req.params.id, user: req.user.id }, // Find by ID and ensure ownership
-            { 
-                $set: { 
-                    description, 
-                    amount: Number(amount), 
-                    date: date ? new Date(date) : undefined 
-                } 
+            {
+                $set: {
+                    description,
+                    amount: Number(amount),
+                    date: date ? new Date(date) : undefined
+                }
             },
             { new: true } // Return the updated document
         );
@@ -160,8 +160,8 @@ app.patch('/api/expenses/:id', auth, async (req, res) => {
 // DELETE an expense by ID
 app.delete('/api/expenses/:id', auth, async (req, res) => {
     try {
-        const expense = await Expense.findOneAndDelete({ 
-            _id: req.params.id, 
+        const expense = await Expense.findOneAndDelete({
+            _id: req.params.id,
             user: req.user.id // Ensure only the owner can delete it
         });
 
